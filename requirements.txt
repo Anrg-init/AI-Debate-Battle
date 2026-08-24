@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+jinja2
+python-dotenv
+
+langchain
+langchain-core
+langgraph
+
+langchain-groq
+langchain-google-genai
+langchain-anthropic
+
+langchain-tavily
+tavily-python
