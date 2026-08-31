@@ -5,6 +5,8 @@ from nodes.agent_b import agent_b_node
 from state.state import DebateState
 from nodes.agent_referre import agent_referre_node
 from nodes.agent_judge import agent_judge_node
+from nodes.retrieve_context import retrieve_context_node
+
 
 graph = StateGraph(DebateState)
 
@@ -14,14 +16,19 @@ graph.add_node("agent_a", agent_a_node)
 graph.add_node("agent_b", agent_b_node)
 graph.add_node("agent_referre", agent_referre_node)
 graph.add_node("agent_judge", agent_judge_node)
+graph.add_node("retrieve_context", retrieve_context_node)
+
 
 graph.add_edge(START, "clarifier")
 graph.add_conditional_edges("clarifier", route_after_clarifier,{
-    "valid": "agent_a",
+    "no_docs": "agent_a",
+    "with_docs": "retrieve_context",
     "stop": END,
     "retry": "ask_retry_input"
 }
 )
+
+graph.add_edge("retrieve_context", "agent_a")
 
 
 graph.add_edge("ask_retry_input", "clarifier")

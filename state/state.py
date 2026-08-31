@@ -15,3 +15,8 @@ class DebateState(TypedDict):
     agent_b_summary: str
 
     judge_final_decision: dict   # {"winner": str, "reasoning": str, "final_answer": str}
+
+    has_documents: bool
+    retrieved_context: str
+
+    

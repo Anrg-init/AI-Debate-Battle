@@ -1,20 +1,30 @@
 # Multi Agent Debate System
 
-A compact LangGraph-based multi-agent debate app that validates a user prompt, runs two opposing AI agents in a small debate loop, summarizes both sides, and lets a judge decide the winner.
+A compact LangGraph-based multi-agent debate app that validates a user input, runs two opposing AI agents, summarizes both sides, and lets a judge decide the winner.
 
 ![alt text](coverpage.png)
 
 ## Overview
 
 This project combines:
-- LangGraph for workflow orchestration
+- LangGraph for orchestration
 - Groq for the clarifier and judge
-- Google Gemini for the two debate agents and referee
+- Google Gemini for the debate agents and referee
 - Tavily search for external evidence
+- RAG for local document-based context retrieval
 
 ## Flow
 
-![alt text](image.png)
+![alt text](image.png)  with rag - ![alt text](graph2.png)
+
+## How it works
+
+1. The clarifier checks whether the user input is meaningful and whether it is factual or opinion-based.
+2. If invalid, it asks the user to retry.
+3. If RAG is enabled, relevant document chunks are retrieved from the vector store.
+4. Agent A argues for the topic and Agent B argues against it.
+5. A referee summarizes both sides.
+6. A judge evaluates the summaries and returns the final answer and winner.
 
 ## Project structure
 
@@ -29,36 +39,28 @@ debate_system/
 │   ├── agent_a.py
 │   ├── agent_b.py
 │   ├── agent_referre.py
-│   └── agent_judge.py
+│   ├── agent_judge.py
+│   └── retrieve_context.py
+├── rag/
+│   ├── ingest.py
+│   └── store.py
 ├── state/
 │   └── state.py
 ├── tools/
 │   └── tools.py
-└── README.md
+├── README.md
+└── README2.md
 ```
 
-## How it works
+## RAG update
 
-1. The clarifier checks whether the user input is meaningful and whether it is factual or opinion-based.
-2. If invalid, it asks for a retry up to a limit.
-3. Agent A argues for the topic and Agent B argues against it.
-4. Each agent may use Tavily search to support its argument.
-5. A referee summarizes both sides.
-6. A judge evaluates the summaries and produces a winner plus a final answer.
+The project now includes a retrieval layer:
+- document loading and chunking in `rag/ingest.py`
+- vector store setup in `rag/store.py`
+- contextual retrieval in `nodes/retrieve_context.py`
+- optional enabling in `main.py` with `use_rag = True`
 
-## State
-
-The shared debate state is defined in `state/state.py` and includes:
-- `user_input`
-- `input_type`
-- `is_valid`
-- `clarifier_attempts`
-- `agent_a_history`
-- `agent_b_history`
-- `current_round`
-- `agent_a_summary`
-- `agent_b_summary`
-- `judge_final_decision`
+This adds document-grounded context before the debate begins.
 
 ## Setup
 
@@ -73,21 +75,11 @@ Add your API keys in `.env` before running.
 
 ## Notes
 
-- The current debate loop is short and fixed.
-- `main.py` uses a sample input and runs the graph once.
-- The project depends on external AI/search services, so API keys must be valid.
-
-## Upcoming features
-
-- RAG-based documentation and knowledge retrieval
-- MAD (Multi-Agent Debate) enhancements with deeper reasoning and context-aware rounds
-- Proper UI for real-time debate visualization and interaction
-- MCP tools integration for structured tool orchestration
-- Authentication, user sessions, and dashboard-based workflows
-- Analytics, evaluation metrics, and debate history tracking
-- Better production-ready architecture for deployment and scaling
-
+- `main.py` includes a sample input and runs the graph once.
+- The debate loop is short and fixed.
+- The app depends on external AI/search services, so valid API keys are required.
+- RAG is optional and can be turned on/off via the `use_rag` flag.
 
 ## Summary
 
-This is a small debate engine built with LangGraph that simulates a structured AI-vs-AI argument, summarizes both positions, and judges the outcome.
+This is a lightweight debate engine built with LangGraph that simulates an AI-vs-AI argument, optionally grounds it in local documents with RAG, summarizes both positions, and lets a judge decide the outcome.

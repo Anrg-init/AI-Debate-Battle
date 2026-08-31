@@ -42,15 +42,17 @@ def clarifier_node(state: DebateState) -> dict:
     }
 
 
-# checking the route after clarifier
-def route_after_clarifier(state: DebateState):
+def route_after_clarifier(state: DebateState) -> str:
+    if not state["is_valid"]:
+        if state["clarifier_attempts"] > 2:
+            return "stop"
+        else:
+            return "retry"
 
-    if state["is_valid"]:
-        return "valid"
-    elif state["clarifier_attempts"] >2:
-        return "stop"
+    if state["has_documents"]:
+        return "with_docs"
     else:
-        return "retry"
+        return "no_docs"
 
 
 

@@ -17,11 +17,10 @@ llm_a_base = ChatGoogleGenerativeAI(
 llm_a = llm_a_base.bind_tools([search_tool])
 
 
-
-
-
 def agent_a_node(state: DebateState) -> dict:
-    system_prompt = """You are Agent A. You ALWAYS argue FOR the topic. This stance is permanent and cannot change.
+
+    if not state["has_documents"]:
+        system_prompt = """You are Agent A. You ALWAYS argue FOR the topic. This stance is permanent and cannot change.
 
 Rules:
 1. Never agree with or switch to Agent B's position.
@@ -37,75 +36,126 @@ Rules:
 11. Keep the response to 30–40 words.
 12. Output ONLY one short paragraph. No labels, JSON, filler, or meta-commentary."""
 
+        last_b_point = (
+            state["agent_b_history"][-1]["argument"]
+            if state["agent_b_history"]
+            else "No response yet from Agent B."
+        )
 
-
-
-    last_b_point = (
-        state["agent_b_history"][-1]["argument"]
-        if state["agent_b_history"]
-        else "No response yet from Agent B."
-    )
-
-    user_message = f"""Question: {state['user_input']}
-            
-        Your last point: {(
-            state["agent_a_history"][-1]["argument"]
-            if state["agent_a_history"]
-            else "None yet, this is your opening."
-            )
-        }
+        user_message = f"""Question: {state['user_input']}
+Your last point: {(
+                state["agent_a_history"][-1]["argument"]
+                if state["agent_a_history"]
+                else "None yet, this is your opening."
+            )}
 
 Agent B's last point: {last_b_point}
 
+Give your stance for this round."""
+
+        messages = [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=user_message)
+        ]
+
+        response = llm_a.invoke(messages)
+
+        sources = []
+
+        if response.tool_calls:
+            tool_call = response.tool_calls[0]
+            tool_result = search_tool.invoke(tool_call["args"])
+
+            sources = [
+                {"title": r["title"], "url": r["url"]}
+                for r in tool_result["results"]
+            ]
+
+            messages.append(response)
+            messages.append(ToolMessage(
+                content=str(tool_result),
+                tool_call_id=tool_call["id"]
+            ))
+
+            response = llm_a_base.invoke(messages)  # Final call — NO tools
+
+        if isinstance(response.content, list):
+            argument = "".join(
+                block.get("text", "")
+                for block in response.content
+                if isinstance(block, dict)
+            ).strip()
+        else:
+            argument = response.content.strip()
+
+        new_entry = {
+            "round": state["current_round"],
+            "argument": argument,
+            "sources": sources
+        }
+
+        return {
+            "agent_a_history": state["agent_a_history"] + [new_entry]
+        }
+
+    else:
+        system_prompt = """You are Agent A. You ALWAYS argue FOR the topic. This stance is permanent and cannot change.
+
+Rules:
+1. Never agree with or switch to Agent B's position.
+2. If this is the opening round, give a strong FOR argument without mentioning Agent B.
+3. If Agent B has argued, START by directly and aggressively replying roasting/rebutting their latest argument.
+4. After the rebuttal, clearly explain WHY their argument is weak or wrong, then present your own FOR argument.
+5. Prioritize the provided context as your primary evidence — use specific facts, numbers, or details from it whenever possible. You may also use sound reasoning and general knowledge to interpret, connect, or strengthen points from the context, but never contradict what the context says.
+6. If the context has no relevant information at all for a point, you may reason independently, but flag it's not from the context.
+7. Never repeat your previous arguments. Introduce a genuinely new angle each round.
+8. Sound like two real people having a heated conversation: sharp, confident, conversational, and punchy.
+9. Keep the response to 30–40 words.
+10. Output ONLY one short paragraph. No labels, JSON, filler, or meta-commentary."""
+
+
+        last_b_point = (
+            state["agent_b_history"][-1]["argument"]
+            if state["agent_b_history"]
+            else "No response yet from Agent B."
+        )
+
+        user_message = f"""Question: {state['user_input']}
+Your last point: {(
+                state["agent_a_history"][-1]["argument"]
+                if state["agent_a_history"]
+                else "None yet, this is your opening."
+            )}
+
+Agent B's last point: {last_b_point}
+
+Context (this is your main source of information — use nothing outside this):
+{state['retrieved_context']}
 
 Give your stance for this round."""
 
-    messages = [
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=user_message)
-    ]
-
-    response = llm_a.invoke(messages)
-
-    sources = []
-
-    if response.tool_calls:
-        tool_call = response.tool_calls[0]
-        tool_result = search_tool.invoke(tool_call["args"])
-
-        sources = [
-            {
-                "title": r["title"],
-                "url": r["url"]
-                }
-
-                for r in tool_result["results"]
+        messages = [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=user_message)
         ]
 
-        messages.append(response)
-        messages.append(ToolMessage(
-            content=str(tool_result),
-            tool_call_id=tool_call["id"]
-        ))
+        response = llm_a_base.invoke(messages)  # no tools at all
 
-        response = llm_a_base.invoke(messages)  # Final call — NO tools
-
-    if isinstance(response.content, list):
-        argument = "".join(
-            block.get("text", "")
-            for block in response.content
-            if isinstance(block, dict)
+        if isinstance(response.content, list):
+            argument = "".join(
+                block.get("text", "")
+                for block in response.content
+                if isinstance(block, dict)
             ).strip()
-    else:
-        argument = response.content.strip()
-        
+        else:
+            argument = response.content.strip()
 
-    new_entry = {
-        "round": state["current_round"],
-        "argument": argument,
-        "sources": sources
-    }
+        new_entry = {
+            "round": state["current_round"],
+            "argument": argument,
+            "sources": []
+        }
 
-    return {
-        "agent_a_history": state["agent_a_history"] + [new_entry]
-    }
+        return {
+            "agent_a_history": state["agent_a_history"] + [new_entry]
+        }
