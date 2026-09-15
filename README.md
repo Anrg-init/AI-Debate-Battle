@@ -13,7 +13,7 @@ A Django web app that runs structured AI debates. A clarifier validates the topi
 - FAISS-based document retrieval
 
 ## Flow
-[text](graph.py)
+[text](graph2.png)
 
 ## Setup
 
