@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>History</title>
+
+    <style>
+        .sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: #181818;
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <h3>Chat History</h3>
+
+        {% for debate in debates %}
+            <p>{{ debate.topic }}</p>
+            <p>{{debate.thread_id}}</p>
+
+            <p><a href="{% url 'history_detail' debate.thread_id %}">{{ debate.topic }}</a></p>
+
+        {% endfor %}
+
+          <a href="{% url 'home' %}">Back to Home</a>
+
+
+    </div>
+
+
+
+
+</body>
+
+</html>

@@ -1,5 +1,6 @@
-_pycache_
-.env
+__pycache__
 myenv
-venv
-__pycache__/
+.env
+temp_uploads/
+temp_uploads
+db.sqlite3

@@ -41,9 +41,16 @@ def chunk_document(documents):
 
 # ---- Step 3: Embed + Store ----
 # embedding_model loaded once at import time (loading it repeatedly is slow).
-embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+_embedding_model = None
+
+def get_embedding_model():
+    global _embedding_model
+    if _embedding_model is None:
+        _embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    return _embedding_model
+
 
 
 def build_vector_store(chunks):
-    return FAISS.from_documents(chunks, embedding_model)
+    return FAISS.from_documents(chunks, get_embedding_model())
 

@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 from state.state import DebateState
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, SystemMessage
+from pydantic import BaseModel
 import os
 import json
 
@@ -9,45 +10,47 @@ import json
 load_dotenv()
 
 
-# Initialize Groq LLM
-llm = ChatGroq(
 
+class ClarifierResponse(BaseModel):
+    is_valid: bool
+    input_type: str
+
+
+llm = ChatGroq(
     model_name="openai/gpt-oss-20b",
     groq_api_key=os.getenv("GROQ_API_KEY_electronic_clar"),
     temperature=0.4
+).with_structured_output(ClarifierResponse)
 
-)
 
-# Main clarifier node, clarifies the user input - whether its factual or opionion
 def clarifier_node(state: DebateState) -> dict:
-
     system_prompt = """You are a Clarifier. Given a user's input, decide:
-        1. is_valid: true if the input is a meaningful, debatable question or statement. false if it's gibberish, empty, or nonsensical.
-        2. input_type:  Determine if it's "factual" (has a verifiable true/false answer) or "opinion" (subjective, debatable).
+    1. is_valid: true if the input is a meaningful, debatable question or statement. false if it's gibberish, empty, or nonsensical.
+    2. input_type: Determine if it's "factual" (has a verifiable true/false answer) or "opinion" (subjective, debatable)."""
 
-        Respond ONLY in JSON format like this, nothing else:
-        {"is_valid": true, "input_type": "factual"}"""
-
-    response =  llm.invoke([
-        SystemMessage(content= system_prompt),
-        HumanMessage(content=state["user_input"])
-    ])
-
-    result = json.loads(response.content)
+    try:
+        result = llm.invoke([
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=state["user_input"])
+        ])
+        input_type = result.input_type
+        is_valid = result.is_valid
+    except Exception as e:
+        print(f"[clarifier_node] LLM call failed: {e}")
+        # Treat failure as invalid input -> triggers retry flow
+        input_type = ""
+        is_valid = False
 
     return {
-        "input_type": result["input_type"],
-        "is_valid": result["is_valid"],
+        "input_type": input_type,
+        "is_valid": is_valid,
         "clarifier_attempts": state["clarifier_attempts"] + 1
     }
 
 
 def route_after_clarifier(state: DebateState) -> str:
     if not state["is_valid"]:
-        if state["clarifier_attempts"] > 2:
-            return "stop"
-        else:
-            return "retry"
+        return "stop"
 
     if state["has_documents"]:
         return "with_docs"
@@ -57,13 +60,13 @@ def route_after_clarifier(state: DebateState) -> str:
 
 
 # retry node
-def ask_retry_input_node(state: DebateState) -> dict:
-    print(f"Your input wasn't valid. Attempt {state['clarifier_attempts']} of 3.")
-    new_input = input("Please enter a valid question: ")
+# def ask_retry_input_node(state: DebateState) -> dict:
+#     print(f"Your input wasn't valid. Attempt {state['clarifier_attempts']} of 3.")
+#     new_input = input("Please enter a valid question: ")
 
-    return {
-        "user_input": new_input
-    }
+#     return {
+#         "user_input": new_input
+#     }
 
 
 #loop of agenta and agentb debating 

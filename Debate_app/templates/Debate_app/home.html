@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}AI Debate Battle{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="layout">
+        <div class="main-column">
+            <div class="chat-area" id="chat-area">
+             
+            </div>
+            <div class="input-bar">
+                <form id="debate-form" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="text" name="topic" placeholder="Enter debate topic">
+                    <input type="file" name="document" accept=".pdf,.txt,.docx">
+                    <button type="submit" disabled>Start Debate</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            {% if user.is_authenticated %}
+                <p>{{ user.username }}</p>
+                <a href="{% url 'logout' %}">Logout</a>
+                <hr>
+                <div id="history-list"></div>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>
+

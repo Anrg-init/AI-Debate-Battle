@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debate Detail</title>
+</head>
+<body>
+    <h1>Topic: {{ result.user_input }}</h1>
+
+    <h2>Debate</h2>
+    {% for entry in transcript %}
+        <p><strong>{{ entry.speaker }} (Round {{ entry.round }}):</strong> {{ entry.argument }}</p>
+    {% endfor %}
+
+    <h2>Referee Summary</h2>
+    <p><strong>Agent A:</strong> {{ result.agent_a_summary }}</p>
+    <p><strong>Agent B:</strong> {{ result.agent_b_summary }}</p>
+
+    <h2>Judge Decision</h2>
+    <p><strong>Winner:</strong> {{ result.judge_final_decision.winner }}</p>
+    <p><strong>Reasoning:</strong> {{ result.judge_final_decision.reasoning }}</p>
+
+    <a href="{% url 'history' %}">Back to History</a>
+</body>
+</html>

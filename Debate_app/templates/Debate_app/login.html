@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Login - AI Debate Battle{% endblock %}
+{% block content %}
+
+<div>
+    <br>
+    <br>
+</div>
+
+<div class="card">
+    <h2>Login</h2>
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Login">
+    </form>
+    <h5 style="margin-top:12px;">Don't have account? <a href="{% url 'signup_view' %}">Signup</a></h5>
+</div>
+{% endblock %}

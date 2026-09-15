@@ -5,7 +5,7 @@ from rag.ingest import load_document, chunk_document, build_vector_store
 from rag.store import set_vector_store
 
 
-inputx = """ how to become super rich, i am currenly 22year old? """
+inputx = """ perfect age to get married """
 
 use_rag = False
 
@@ -35,6 +35,6 @@ initial_state: DebateState = {
 result = app.invoke(initial_state)
 
 print(result)
-print(json.dumps(result, indent=4, ensure_ascii=False))
+# print(json.dumps(result, indent=4, ensure_ascii=False))
 
-app.get_graph().draw_mermaid_png(output_file_path="graph2.png")
+# app.get_graph().draw_mermaid_png(output_file_path="graph2.png")

@@ -56,17 +56,31 @@ Agent B's summary: {state['agent_b_summary']}
 
 Give your final decision."""
 
-    result = llm_judge.invoke([
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=user_message)
-    ])
+    try:
 
-    return {
-        "judge_final_decision": {
-            "winner": result.winner,
-            "reasoning": result.reasoning,
-            "final_answer": result.final_answer
+        result = llm_judge.invoke([
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=user_message)
+        ])
+
+        return {
+            "judge_final_decision": {
+                "winner": result.winner,
+                "reasoning": result.reasoning,
+                "final_answer": result.final_answer
+            }
         }
-    }
+    except Exception as e:
+        print(f"[agent_judge_node] LLM call failed: {e}")
+
+        return{
+            "judge_final_decision": {
+                "winner": "Undetermined",
+                "reasoning": "Judge could not reach a decision due to a technical error.",
+                "final_answer": "Unable to generate a final answer due to a technical error."
+            }
+        }
+
+    
 
 

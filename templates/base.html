@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}AI Debate Battle{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" rel="stylesheet">
+
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'JetBrains Mono', monospace;
+        background: #0A0A0A;
+        color: #EDEDED;
+        min-height: 100vh;
+        display: flex;
+    }
+
+    .left-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 40px;
+    }
+
+    h1 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 3rem;
+    }
+
+    h2 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 100;
+    font-size: 1.4rem;
+    }
+
+
+
+    .right-panel {
+        flex: 1;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .right-panel img {
+        width: 70%;
+        height: 80%;
+        object-fit: cover;
+    }
+
+    /* LOGIN / SIGNUP */
+
+    .card {
+        background: #111111;
+        padding: 30px;
+        width: 100%;
+        max-width: 380px;
+    }
+
+    .card h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 22px;
+    }
+
+    .card form p {
+        margin-bottom: 12px;
+    }
+
+    .card label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 14px;
+        color: #aaa;
+    }
+
+    .card input[type="text"],
+    .card input[type="password"],
+    .card input[type="email"] {
+        width: 100%;
+        padding: 12px;
+        background: #0A0A0A;
+        border: 1px solid #333;
+        color: white;
+        outline: none;
+        font-family: inherit;
+    }
+
+    .card input[type="submit"] {
+        width: 100%;
+        padding: 12px;
+        margin-top: 8px;
+        background: #E63946;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: bold;
+    }
+
+    .card input[type="submit"]:hover {
+        background: #c92f3b;
+    }
+
+    .card h5 {
+        text-align: center;
+        margin-top: 15px;
+        color: #aaa;
+    }
+
+    .card a {
+        color: #E63946;
+        text-decoration: none;
+    }
+
+    .card a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 800px) {
+        .right-panel {
+            display: none;
+        }
+    }
+</style>
+
+</head>
+<body>
+    <div class="left-panel">
+        <h1>Take The Better Decision</h1>
+        <h2> With  Multiple Agents</h2>
+        <br>
+        {% block content %}{% endblock %}
+    </div>
+    <div class="right-panel">
+        <img src="{% static 'images/bg.webp' %}" alt="AI debate">
+    </div>
+</body>
+</html>

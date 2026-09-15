@@ -7,17 +7,22 @@ from tools.tools import search_tool
 
 load_dotenv()
 
-
 llm_b_base = ChatGoogleGenerativeAI(
     model="gemini-3.5-flash-lite",
     google_api_key=os.getenv("GEMINI_API_KEY_565_agent_b"),
     temperature=0.4
 )
-
 llm_b = llm_b_base.bind_tools([search_tool])
+
+FALLBACK_TEXT = "[Agent B could not respond this round due to a technical error]"
 
 
 def agent_b_node(state: DebateState) -> dict:
+
+    def get_last(history, empty_msg):
+        if history and not history[-1].get("failed"):
+            return history[-1]["argument"]
+        return empty_msg
 
     if not state["has_documents"]:
         system_prompt = """You are Agent B. You ALWAYS argue AGAINST the topic. This stance is permanent and cannot change.
@@ -25,28 +30,19 @@ def agent_b_node(state: DebateState) -> dict:
 Rules:
 1. Never agree with or switch to Agent A's position.
 2. If this is the opening round, give a strong AGAINST argument without mentioning Agent A.
-3. If Agent A has argued, START by directly and aggressively replying roasting/rebutting their latest argument. Attack their reasoning, claim, evidence, contradiction, or gap — not their personal identity.
+3. If Agent A has argued, START by directly and aggressively replying roasting/rebutting their latest argument.
 4. After the rebuttal, clearly explain WHY their argument is weak or wrong, then present your own AGAINST argument.
 5. Support claims with real evidence, facts, or sound reasoning. Never invent facts, numbers, studies, or sources.
 6. Never repeat your previous arguments. Introduce a genuinely new angle each round.
-7. ROUND 0 REQUIREMENT: You MUST call the search tool before writing your opening argument. Do not answer Round 0 without using the search tool.
-8. After Round 0, use the search tool when it meaningfully improves factual accuracy or provides needed current information.
+7. ROUND 0 REQUIREMENT: You MUST call the search tool before writing your opening argument.
+8. After Round 0, use the search tool when it meaningfully improves factual accuracy.
 9. If you search, use only information actually supported by the results.
-10. Sound like two real people having a heated conversation: sharp, confident, conversational, and punchy — not like an academic essay.
+10. Sound like two real people having a heated conversation: sharp, confident, conversational, punchy.
 11. Keep the response to 30–40 words.
 12. Output ONLY one short paragraph. No labels, JSON, filler, or meta-commentary."""
 
-        last_a_point = (
-            state["agent_a_history"][-1]["argument"]
-            if state["agent_a_history"]
-            else "No response yet from Agent A."
-        )
-
-        last_b_point = (
-            state["agent_b_history"][-1]["argument"]
-            if state["agent_b_history"]
-            else "None yet, this is your opening."
-        )
+        last_a_point = get_last(state["agent_a_history"], "No response yet from Agent A.")
+        last_b_point = get_last(state["agent_b_history"], "None yet, this is your opening.")
 
         user_message = f"""Question: {state["user_input"]}
 
@@ -60,46 +56,34 @@ Current round: {state["current_round"]}
 
 Give your argument for this round."""
 
-        messages = [
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=user_message)
-        ]
+        messages = [SystemMessage(content=system_prompt), HumanMessage(content=user_message)]
 
-        response = llm_b.invoke(messages)
+        try:
+            response = llm_b.invoke(messages)
+            sources = []
 
-        sources = []
+            if response.tool_calls:
+                tool_call = response.tool_calls[0]
+                tool_result = search_tool.invoke(tool_call["args"])
+                sources = [
+                    {"title": r.get("title", ""), "url": r.get("url", "")}
+                    for r in tool_result.get("results", [])
+                ]
 
-        if response.tool_calls:
-            tool_call = response.tool_calls[0]
-            tool_result = search_tool.invoke(tool_call["args"])
+                messages.append(response)
+                messages.append(ToolMessage(content=str(tool_result), tool_call_id=tool_call["id"]))
+                response = llm_b_base.invoke(messages)
 
-            sources = [
-                {"title": r["title"], "url": r["url"]}
-                for r in tool_result["results"]
-            ]
+            if isinstance(response.content, list):
+                argument = "".join(b.get("text", "") for b in response.content if isinstance(b, dict)).strip()
+            else:
+                argument = response.content.strip()
 
-            messages.append(response)
-            messages.append(ToolMessage(
-                content=str(tool_result),
-                tool_call_id=tool_call["id"]
-            ))
+            new_entry = {"round": state["current_round"], "argument": argument, "sources": sources}
 
-            response = llm_b_base.invoke(messages)  # Final call — NO tools
-
-        if isinstance(response.content, list):
-            argument = "".join(
-                block.get("text", "")
-                for block in response.content
-                if isinstance(block, dict)
-            ).strip()
-        else:
-            argument = response.content.strip()
-
-        new_entry = {
-            "round": state["current_round"],
-            "argument": argument,
-            "sources": sources
-        }
+        except Exception as e:
+            print(f"[agent_b_node] LLM call failed: {e}")
+            new_entry = {"round": state["current_round"], "argument": FALLBACK_TEXT, "sources": [], "failed": True}
 
         return {
             "agent_b_history": state["agent_b_history"] + [new_entry],
@@ -117,22 +101,12 @@ Rules:
 5. Prioritize the provided context as your primary evidence — use specific facts, numbers, or details from it whenever possible. You may also use sound reasoning and general knowledge to interpret, connect, or strengthen points from the context, but never contradict what the context says.
 6. If the context has no relevant information at all for a point, you may reason independently, but flag it's not from the context.
 7. Never repeat your previous arguments. Introduce a genuinely new angle each round.
-8. Sound like two real people having a heated conversation: sharp, confident, conversational, and punchy.
+8. Sound like two real people having a heated conversation: sharp, confident, conversational, punchy.
 9. Keep the response to 30–40 words.
 10. Output ONLY one short paragraph. No labels, JSON, filler, or meta-commentary."""
 
-
-        last_a_point = (
-            state["agent_a_history"][-1]["argument"]
-            if state["agent_a_history"]
-            else "No response yet from Agent A."
-        )
-
-        last_b_point = (
-            state["agent_b_history"][-1]["argument"]
-            if state["agent_b_history"]
-            else "None yet, this is your opening."
-        )
+        last_a_point = get_last(state["agent_a_history"], "No response yet from Agent A.")
+        last_b_point = get_last(state["agent_b_history"], "None yet, this is your opening.")
 
         user_message = f"""Question: {state["user_input"]}
 
@@ -144,32 +118,26 @@ Agent A's latest argument:
 
 Current round: {state["current_round"]}
 
-Context (this is your main source of information — use nothing outside this):
+Context (this is your ONLY source of information — use nothing outside this):
 {state['retrieved_context']}
 
 Give your argument for this round."""
 
-        messages = [
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=user_message)
-        ]
+        messages = [SystemMessage(content=system_prompt), HumanMessage(content=user_message)]
 
-        response = llm_b_base.invoke(messages)  # no tools at all
+        try:
+            response = llm_b_base.invoke(messages)
 
-        if isinstance(response.content, list):
-            argument = "".join(
-                block.get("text", "")
-                for block in response.content
-                if isinstance(block, dict)
-            ).strip()
-        else:
-            argument = response.content.strip()
+            if isinstance(response.content, list):
+                argument = "".join(b.get("text", "") for b in response.content if isinstance(b, dict)).strip()
+            else:
+                argument = response.content.strip()
 
-        new_entry = {
-            "round": state["current_round"],
-            "argument": argument,
-            "sources": []
-        }
+            new_entry = {"round": state["current_round"], "argument": argument, "sources": []}
+
+        except Exception as e:
+            print(f"[agent_b_node RAG] LLM call failed: {e}")
+            new_entry = {"round": state["current_round"], "argument": FALLBACK_TEXT, "sources": [], "failed": True}
 
         return {
             "agent_b_history": state["agent_b_history"] + [new_entry],

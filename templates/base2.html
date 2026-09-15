@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}AI Debate Battle{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="layout">
+        <div class="main-area">
+            {% block content %}
+            {% endblock %}
+        </div>
+
+        <div class="sidebar">
+            {% block sidebar %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

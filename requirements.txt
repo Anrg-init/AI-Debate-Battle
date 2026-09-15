@@ -1,6 +1,4 @@
-fastapi
 uvicorn
-jinja2
 python-dotenv
 
 langchain
@@ -19,3 +17,6 @@ langchain-text-splitters
 langchain-huggingface
 faiss-cpu
 sentence-transformers
+django
+
+pymupdf

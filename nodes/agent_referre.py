@@ -55,12 +55,20 @@ Rules:
 
 Give a summary for each agent."""
 
-    result = llm_referee.invoke([
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=user_message)
-    ])
+    try:
+        result = llm_referee.invoke([
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=user_message)
+        ])
 
-    return {
-        "agent_a_summary": result.agent_a_summary,
-        "agent_b_summary": result.agent_b_summary
-    }
+        return {
+            "agent_a_summary": result.agent_a_summary,
+            "agent_b_summary": result.agent_b_summary
+        }
+    except Exception as e:
+        print(f"[agent_referre_node] LLM call failed: {e}")
+        return {
+            "agent_a_summary": "Referee summary unavailable due to a technical error.",
+            "agent_b_summary": "Referee summary unavailable due to a technical error."
+        }
+
