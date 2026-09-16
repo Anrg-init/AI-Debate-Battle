@@ -3,4 +3,4 @@ myenv
 .env
 temp_uploads/
 temp_uploads
-db.sqlite3
+staticfiles

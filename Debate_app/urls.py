@@ -6,10 +6,11 @@ urlpatterns = [
     path("stream/", views.stream_debate, name="stream"),
     path("upload/", views.upload_document, name="upload_document"),
     path("signup/", views.signup_view, name="signup_view"),
-    path("login/", views.login_view, name="login_view"),
+    path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
-    path("history/", views.history_view, name="history"),
+    path("history-data/", views.history_json, name="history_json"),
     path("history/<str:thread_id>/", views.history_detail_view, name="history_detail"),
+
 
     
 ]

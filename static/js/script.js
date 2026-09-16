@@ -1,5 +1,7 @@
 let isUploading = false;
 let hasDocuments = false;
+let currentThreadId = crypto.randomUUID();
+let activeSource = null;
 
 function getCsrfToken() {
     return document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -37,7 +39,6 @@ document.querySelector('input[name="document"]').addEventListener("change", asyn
             body: formData
         });
         const data = await response.json();
-        console.log("Upload response:", data);
         if (data.status === "done") {
             hasDocuments = true;
         }
@@ -49,51 +50,169 @@ document.querySelector('input[name="document"]').addEventListener("change", asyn
     updateButtonState();
 });
 
+document.getElementById("new-chat-btn").addEventListener("click", () => {
+    currentThreadId = crypto.randomUUID();
+    hasDocuments = false;
+    document.getElementById("chat-area").innerHTML = "";
+    document.querySelector('input[name="topic"]').value = "";
+    document.querySelector('input[name="document"]').value = "";
+    updateButtonState();
+});
+
+
+
+
+
 document.getElementById("debate-form").addEventListener("submit", (event) => {
     event.preventDefault();
 
+    if (activeSource) {
+        return;
+    }
+
     const topic = document.querySelector('input[name="topic"]').value;
-    const source = new EventSource(
-        "stream/?topic=" + encodeURIComponent(topic) + "&has_documents=" + hasDocuments
+    const chatArea = document.getElementById("chat-area");
+
+    activeSource = new EventSource(
+        "stream/?topic=" + encodeURIComponent(topic) +
+        "&has_documents=" + hasDocuments +
+        "&thread_id=" + currentThreadId
     );
 
-    source.onmessage = (event) => {
+
+    let lastRenderedRound = null;
+
+    activeSource.onmessage = (event) => {
         const ai_output = JSON.parse(event.data);
         const nodeName = Object.keys(ai_output)[0];
         const nodeData = ai_output[nodeName];
-        console.log("Node:", nodeName, nodeData);
-
-        let text = "";
 
         if (nodeName === "clarifier") {
-            const message = document.getElementById("div1");
-            
             if (!nodeData.is_valid) {
-                message.textContent = "Please enter a correct input";
+                const div = document.createElement("div");
+                div.className = "message assistant";
+                div.textContent = "That doesn't look like a valid debate topic. Could you try rephrasing it?";
+                chatArea.appendChild(div);
             }
             return;
-
         }
 
         if (nodeName === "agent_a" || nodeName === "agent_b") {
             const historyKey = nodeName === "agent_a" ? "agent_a_history" : "agent_b_history";
             const lastEntry = nodeData[historyKey][nodeData[historyKey].length - 1];
-            text = `${nodeName} (Round ${lastEntry.round}): ${lastEntry.argument}`;
-        } else if (nodeName === "agent_referre") {
-            text = `Referee Summary — A: ${nodeData.agent_a_summary} | B: ${nodeData.agent_b_summary}`;
-        } else if (nodeName === "agent_judge") {
-            text = `Judge Decision — Winner: ${nodeData.judge_final_decision.winner} | ${nodeData.judge_final_decision.reasoning}`;
-        } else {
-            return;
-        }
+            const agentLabel = nodeName === "agent_a" ? "AGENT GREY" : "AGENT NAVY";
+            const cssClass = nodeName === "agent_a" ? "message agent-a" : "message agent-b";
 
-        const ai_output_div = document.createElement("div");
-        ai_output_div.textContent = text;
-        document.body.appendChild(ai_output_div);
+            if (lastEntry.round !== lastRenderedRound) {
+                lastRenderedRound = lastEntry.round;
+                const divider = document.createElement("div");
+                divider.className = "round-divider";
+                divider.innerHTML = `<span>ROUND ${lastEntry.round}</span>`;
+                chatArea.appendChild(divider);
+            }
+
+            const div = document.createElement("div");
+            div.className = cssClass;
+            div.innerHTML = `
+                <div class="message-label">${agentLabel} · ROUND ${lastEntry.round}</div>
+                <p class="message-text"></p>
+            `;
+            div.querySelector(".message-text").textContent = lastEntry.argument;
+            chatArea.appendChild(div);
+        } else if (nodeName === "agent_referre") {
+            const div = document.createElement("div");
+            div.className = "message assistant";
+            div.innerHTML = `
+                <div class="message-label">REFEREE SUMMARY</div>
+                <p class="message-text"></p>
+            `;
+            div.querySelector(".message-text").textContent = `A: ${nodeData.agent_a_summary} | B: ${nodeData.agent_b_summary}`;
+            chatArea.appendChild(div);
+        } else if (nodeName === "agent_judge") {
+            const div = document.createElement("div");
+            div.className = "message assistant";
+            div.innerHTML = `
+                <div class="message-label">JUDGE DECISION — ${nodeData.judge_final_decision.winner}</div>
+                <p class="message-text"></p>
+            `;
+            div.querySelector(".message-text").textContent = nodeData.judge_final_decision.reasoning;
+            chatArea.appendChild(div);
+        }
     };
 
-    source.onerror = () => {
-        console.log("Stream ended or errored");
-        source.close();
+
+    activeSource.onerror = () => {
+        activeSource.close();
+        activeSource = null;
+        loadHistory();
     };
 });
+
+
+
+
+async function loadHistory() {
+    try {
+        const response = await fetch("history-data/");
+        const data = await response.json();
+
+        const historyList = document.getElementById("history-list");
+        historyList.innerHTML = "";
+
+        data.debates.forEach((debate) => {
+            const item = document.createElement("div");
+            item.className = debate.thread_id === currentThreadId ? "history-item active" : "history-item";
+            item.textContent = debate.topic;
+            item.addEventListener("click", () => loadDebate(debate.thread_id));
+            historyList.appendChild(item);
+        });
+    } catch (error) {
+        console.error("Failed to load history:", error);
+    }
+}
+
+
+
+async function loadDebate(threadId) {
+    try {
+        const response = await fetch(`history/${threadId}/`);
+        const result = await response.json();
+
+        currentThreadId = threadId;
+        hasDocuments = result.has_documents || false;
+
+        const chatArea = document.getElementById("chat-area");
+        chatArea.innerHTML = "";
+
+        const transcript = [];
+        for (let i = 0; i < result.agent_a_history.length; i++) {
+            transcript.push({ speaker: "agent_a", ...result.agent_a_history[i] });
+            transcript.push({ speaker: "agent_b", ...result.agent_b_history[i] });
+        }
+
+        transcript.forEach((entry) => {
+            const div = document.createElement("div");
+            div.className = entry.speaker === "agent_a" ? "message agent-a" : "message agent-b";
+            div.textContent = `${entry.speaker} (Round ${entry.round}): ${entry.argument}`;
+            chatArea.appendChild(div);
+        });
+
+        if (result.agent_a_summary) {
+            const div = document.createElement("div");
+            div.className = "message assistant";
+            div.textContent = `Referee Summary — A: ${result.agent_a_summary} | B: ${result.agent_b_summary}`;
+            chatArea.appendChild(div);
+        }
+
+        if (result.judge_final_decision && result.judge_final_decision.winner) {
+            const div = document.createElement("div");
+            div.className = "message assistant";
+            div.textContent = `Judge Decision — Winner: ${result.judge_final_decision.winner} | ${result.judge_final_decision.reasoning}`;
+            chatArea.appendChild(div);
+        }
+    } catch (error) {
+        console.error("Failed to load debate:", error);
+    }
+}
+
+loadHistory();

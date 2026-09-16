@@ -3,20 +3,92 @@
 <html>
 <head>
     <title>{% block title %}AI Debate Battle{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
     <div class="layout">
-        <div class="main-area">
-            {% block content %}
-            {% endblock %}
+        <div class="main-column">
+
+
+
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <div class="logo-box">⚖</div>
+                    <div class="top-bar-titles">
+                        <h1 class="app-title">AI Debate Battle</h1>
+                        <p class="app-subtitle" id="current-topic-label">DEBATE TOPIC WILL SHOW HERE</p>
+                    </div>
+                </div>
+
+
+                <div class="status-pill" id="status-pill">
+                    <span class="status-dot"></span>
+                    <span>Two Agent Debating </span>
+                </div>
+            </div>
+
+
+
+
+
+            <div class="chat-area" id="chat-area">
+                {% block chat_content %}
+                {% endblock %}
+            </div>
+
+
+            <!-- base2.html mein .input-bar ka poora content replace karo -->
+            <div class="input-bar">
+                <form id="debate-form" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="input-row">
+                        <label for="doc-upload" class="attach-icon">📎</label>
+                        <input type="file" id="doc-upload" name="document" accept=".pdf,.txt,.docx" hidden>
+                        <input type="text" name="topic" placeholder="Enter a debate topic...">
+                        <button type="submit" disabled>START DEBATE ↑</button>
+                    </div>
+                    <div class="input-meta">
+                    </div>
+                </form>
+            </div>
         </div>
 
+
+
+
+
         <div class="sidebar">
-            {% block sidebar %}
-            {% endblock %}
+            {% if user.is_authenticated %}
+            <div class="profile-section">
+                <div class="profile-avatar"></div>
+                <div class="profile-info">
+                    <p class="profile-name">{{ user.username }}</p>
+                    <p class="profile-plan">PLAN</p>
+                </div>
+                <a href="{% url 'logout' %}" class="logout-icon">⏻</a>
+            </div>
+
+            <button id="new-chat-btn" class="new-debate-btn">+ NEW DEBATE</button>
+
+            <div class="search-wrapper">
+                <input type="text" id="search-debates" class="search-input" placeholder="Search debates">
+            </div>
+
+            <div class="history-header">
+                <span>RECENT DEBATES</span>
+                <span id="history-count"></span>
+            </div>
+            <div id="history-list" class="history-list"></div>
+            {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            {% endif %}
         </div>
     </div>
+
+
 
     <script src="{% static 'js/script.js' %}"></script>
 </body>
