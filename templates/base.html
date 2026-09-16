@@ -3,6 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AI Debate Battle{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" rel="stylesheet">
 
@@ -108,6 +109,11 @@
         font-weight: bold;
     }
 
+    .card input[type="submit"]:disabled {
+        opacity: 0.65;
+        cursor: wait;
+    }
+
     .card input[type="submit"]:hover {
         background: #c92f3b;
     }
@@ -145,5 +151,14 @@
     <div class="right-panel">
         <img src="{% static 'images/bg.webp' %}" alt="AI debate">
     </div>
+    <script>
+        document.querySelectorAll(".auth-form").forEach((form) => {
+            form.addEventListener("submit", () => {
+                const submitButton = form.querySelector('input[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.value = submitButton.dataset.loadingText;
+            });
+        });
+    </script>
 </body>
 </html>

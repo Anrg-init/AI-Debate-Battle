@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AI Debate Battle{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,15 +20,16 @@
                     <div class="logo-box">⚖</div>
                     <div class="top-bar-titles">
                         <h1 class="app-title">AI Debate Battle</h1>
-                        <p class="app-subtitle" id="current-topic-label">DEBATE TOPIC WILL SHOW HERE</p>
+                        <p class="app-subtitle" id="current-topic-label"></p>
                     </div>
                 </div>
 
 
                 <div class="status-pill" id="status-pill">
                     <span class="status-dot"></span>
-                    <span>Two Agent Debating </span>
+                    <span id="status-text">Ready</span>
                 </div>
+                <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Open debate history" aria-controls="debate-sidebar" aria-expanded="false">HISTORY</button>
             </div>
 
 
@@ -50,7 +52,7 @@
                         <input type="text" name="topic" placeholder="Enter a debate topic...">
                         <button type="submit" disabled>START DEBATE ↑</button>
                     </div>
-                    <div class="input-meta">
+                    <div class="input-meta" id="input-status" aria-live="polite">
                     </div>
                 </form>
             </div>
@@ -60,8 +62,10 @@
 
 
 
-        <div class="sidebar">
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+        <div class="sidebar" id="debate-sidebar">
             {% if user.is_authenticated %}
+            <button type="button" class="sidebar-close" id="sidebar-close" aria-label="Close debate history">CLOSE</button>
             <div class="profile-section">
                 <div class="profile-avatar"></div>
                 <div class="profile-info">
@@ -81,7 +85,7 @@
                 <span>RECENT DEBATES</span>
                 <span id="history-count"></span>
             </div>
-            <div id="history-list" class="history-list"></div>
+            <div id="history-list" class="history-list" aria-live="polite"></div>
             {% else %}
             <a href="{% url 'login' %}">Login</a>
             {% endif %}

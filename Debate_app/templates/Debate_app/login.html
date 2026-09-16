@@ -4,15 +4,14 @@
 
 <div>
     <br>
-    <br>
 </div>
 
 <div class="card">
     <h2>Login</h2>
-    <form action="" method="post">
+    <form action="" method="post" class="auth-form">
         {% csrf_token %}
         {{ form.as_p }}
-        <input type="submit" value="Login">
+        <input type="submit" value="Login" data-loading-text="Signing in...">
     </form>
     <h5 style="margin-top:12px;">Don't have account? <a href="{% url 'signup_view' %}">Signup</a></h5>
 </div>
