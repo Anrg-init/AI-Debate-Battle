@@ -10,6 +10,7 @@ class DebateState(TypedDict):
     agent_b_history: list[dict]
 
     current_round: int
+    rounds: int
 
     agent_a_summary: str
     agent_b_summary: str

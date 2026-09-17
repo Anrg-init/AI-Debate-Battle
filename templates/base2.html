@@ -3,66 +3,14 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AI Debate Battle{% endblock %}</title>
+    <title>{% block title %}BeyondWhole{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
 </head>
 <body>
     <div class="layout">
-        <div class="main-column">
-
-
-
-            <div class="top-bar">
-                <div class="top-bar-left">
-                    <div class="logo-box">⚖</div>
-                    <div class="top-bar-titles">
-                        <h1 class="app-title">AI Debate Battle</h1>
-                        <p class="app-subtitle" id="current-topic-label"></p>
-                    </div>
-                </div>
-
-
-                <div class="status-pill" id="status-pill">
-                    <span class="status-dot"></span>
-                    <span id="status-text">Ready</span>
-                </div>
-                <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Open debate history" aria-controls="debate-sidebar" aria-expanded="false">HISTORY</button>
-            </div>
-
-
-
-
-
-            <div class="chat-area" id="chat-area">
-                {% block chat_content %}
-                {% endblock %}
-            </div>
-
-
-            <!-- base2.html mein .input-bar ka poora content replace karo -->
-            <div class="input-bar">
-                <form id="debate-form" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="input-row">
-                        <label for="doc-upload" class="attach-icon">📎</label>
-                        <input type="file" id="doc-upload" name="document" accept=".pdf,.txt,.docx" hidden>
-                        <input type="text" name="topic" placeholder="Enter a debate topic...">
-                        <button type="submit" disabled>START DEBATE ↑</button>
-                    </div>
-                    <div class="input-meta" id="input-status" aria-live="polite">
-                    </div>
-                </form>
-            </div>
-        </div>
-
-
-
-
-
-        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
         <div class="sidebar" id="debate-sidebar">
             {% if user.is_authenticated %}
             <button type="button" class="sidebar-close" id="sidebar-close" aria-label="Close debate history">CLOSE</button>
@@ -85,15 +33,83 @@
                 <span>RECENT DEBATES</span>
                 <span id="history-count"></span>
             </div>
-            <div id="history-list" class="history-list" aria-live="polite"></div>
+                  <div id="history-list" class="history-list" aria-live="polite"></div>
             {% else %}
             <a href="{% url 'login' %}">Login</a>
             {% endif %}
         </div>
+
+        <div class="main-column">
+
+
+
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <div class="logo-box"><img src="{% static 'images/logo3.png' %}" alt="BeyondWhole logo"></div>
+                    <div class="top-bar-titles">
+                        <h1 class="app-title">BeyondWhole</h1>
+                        <p class="app-subtitle" id="current-topic-label">MAD Chatbot</p>
+                    </div>
+                </div>
+
+
+                <div class="status-pill" id="status-pill">
+                    <span class="status-dot"></span>
+                    <span id="status-text">Ready</span>
+                </div>
+                <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Open debate history" aria-controls="debate-sidebar" aria-expanded="false">☰</button>
+            </div>
+
+
+
+
+
+            <div class="chat-area" id="chat-area">
+                {% block chat_content %}
+                {% endblock %}
+            </div>
+
+
+                <div class="input-bar">
+                <form id="debate-form" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="input-row">
+                        <label for="doc-upload" class="attach-icon">📎</label>
+                        <input type="file" id="doc-upload" name="document" accept=".pdf,.txt,.docx" hidden>
+                        <input type="text" name="topic" placeholder="Enter a debate topic...">
+                        <div class="rounds-control">
+                            <label for="rounds-select">ROUNDS</label>
+                            <select id="rounds-select" name="rounds" aria-label="Number of debate rounds">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                            </select>
+                        </div>
+                        <button type="submit" disabled>START DEBATE ↑</button>
+                    </div>
+                    <div class="input-meta" id="input-status" aria-live="polite">
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+
+
+             <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
     </div>
 
 
 
+    <script>
+        window.debateUrls = {
+            upload: "{% url 'upload_document' %}",
+            stream: "{% url 'stream' %}",
+            history: "{% url 'history_json' %}",
+            historyDetail: "{% url 'history_detail' 'THREAD_ID_PLACEHOLDER' %}"
+        };
+    </script>
     <script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>

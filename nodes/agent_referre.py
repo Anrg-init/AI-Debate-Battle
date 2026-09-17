@@ -3,6 +3,7 @@ from state.state import DebateState
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 import os
+from pathlib import Path
 from pydantic import BaseModel
 
 
@@ -20,26 +21,17 @@ llm_referee = ChatGoogleGenerativeAI(
     google_api_key=os.getenv("Gemini_Electronic_Referree_key"),
     temperature=0.4
 ).with_structured_output(referre_response)
+PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "agent_referre.md"
+REFEREE_PROMPT = PROMPT_PATH.read_text(encoding="utf-8").split(
+    "# Referee Prompt",
+    maxsplit=1,
+)[1].strip()
 
 
 
 def agent_referre_node(state: DebateState) -> dict:
-    system_prompt = """You are a neutral Referee in a debate. You receive the complete round-by-round arguments and sources from Agent A and Agent B.
-
-Your job:
-1. Summarize Agent A's overall case, including its main arguments and supporting evidence.
-2. Summarize Agent B's overall case in the same way.
-3. Identify important claims that were not answered by the opponent.
-4. Identify claims supported by sources and claims that are unsupported or weakly supported.
-5. Note important contradictions, repeated arguments, or logical gaps.
-
-Rules:
-- Stay strictly neutral. Do not declare a winner.
-- Judge only what was actually said and the sources provided.
-- Do not add new arguments, facts, or evidence.
-- Do not assume a source proves a claim; check whether the provided evidence actually supports it.
-- Distinguish clearly between facts/evidence and opinions or assertions.
-- Cover the full debate, not just the final round."""
+    """Summarize both debate positions without declaring a winner."""
+    system_prompt = REFEREE_PROMPT
 
 
     user_message = f"""Question: {state['user_input']}

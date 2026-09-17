@@ -4,8 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AI Debate Battle{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <title>{% block title %}BeyondWhole{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
     * {
@@ -14,144 +16,38 @@
         box-sizing: border-box;
     }
 
-    body {
-        font-family: 'JetBrains Mono', monospace;
-        background: #0A0A0A;
-        color: #EDEDED;
-        min-height: 100vh;
-        display: flex;
-    }
-
-    .left-panel {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 40px;
-    }
-
-    h1 {
-    font-family: 'DM Serif Display', serif;
-    font-weight: 400;
-    font-size: 3rem;
-    }
-
-    h2 {
-    font-family: 'DM Serif Display', serif;
-    font-weight: 100;
-    font-size: 1.4rem;
-    }
-
-
-
-    .right-panel {
-        flex: 1;
-        padding: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .right-panel img {
-        width: 70%;
-        height: 80%;
-        object-fit: cover;
-    }
-
-    /* LOGIN / SIGNUP */
-
-    .card {
-        background: #111111;
-        padding: 30px;
-        width: 100%;
-        max-width: 380px;
-    }
-
-    .card h2 {
-        text-align: center;
-        margin-bottom: 20px;
-        font-size: 22px;
-    }
-
-    .card form p {
-        margin-bottom: 12px;
-    }
-
-    .card label {
-        display: block;
-        margin-bottom: 5px;
-        font-size: 14px;
-        color: #aaa;
-    }
-
-    .card input[type="text"],
-    .card input[type="password"],
-    .card input[type="email"] {
-        width: 100%;
-        padding: 12px;
-        background: #0A0A0A;
-        border: 1px solid #333;
-        color: white;
-        outline: none;
-        font-family: inherit;
-    }
-
-    .card input[type="submit"] {
-        width: 100%;
-        padding: 12px;
-        margin-top: 8px;
-        background: #E63946;
-        color: white;
-        border: none;
-        cursor: pointer;
-        font-family: inherit;
-        font-weight: bold;
-    }
-
-    .card input[type="submit"]:disabled {
-        opacity: 0.65;
-        cursor: wait;
-    }
-
-    .card input[type="submit"]:hover {
-        background: #c92f3b;
-    }
-
-    .card h5 {
-        text-align: center;
-        margin-top: 15px;
-        color: #aaa;
-    }
-
-    .card a {
-        color: #E63946;
-        text-decoration: none;
-    }
-
-    .card a:hover {
-        text-decoration: underline;
-    }
-
-    @media (max-width: 800px) {
-        .right-panel {
-            display: none;
-        }
-    }
+    /* Auth shell keeps the form readable while echoing the landing page grid. */
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 26px 16px; background-color: #f6f5f2; background-image: linear-gradient(#d8d6d0 1px, transparent 1px), linear-gradient(90deg, #d8d6d0 1px, transparent 1px); background-size: 38px 38px; color: #0b0b0a; font-family: 'DM Sans', sans-serif; }
+    .auth-layout { width: min(100%, 420px); }
+    .auth-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 18px; color: #0b0b0a; font-size: 15px; font-weight: 700; text-decoration: none; }
+    .auth-brand-mark { display: grid; width: 34px; height: 34px; place-items: center; overflow: hidden; border-radius: 8px; background: #292825; color: white; font-size: 19px; }
+    .auth-brand-mark img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .card { padding: 30px 32px; border: 1px solid #d8d6d0; border-radius: 10px; background: rgba(251, 250, 248, .92); box-shadow: 0 10px 28px rgba(41, 40, 37, .05); }
+    .card h2 { margin: 0 0 6px; font-size: 26px; letter-spacing: -.04em; }
+    .auth-subtitle { margin-bottom: 26px; color: #4d4b47; font-size: 14px; }
+    .auth-helper { margin: -14px 0 18px; color: #716e68; font-size: 12px; }
+    .card form p { margin: 0 0 16px; }
+    .card label { display: block; margin-bottom: 7px; font-size: 12px; font-weight: 600; }
+    .card input[type="text"], .card input[type="password"], .card input[type="email"] { width: 100%; padding: 12px 13px; border: 1px solid #d8d6d0; border-radius: 6px; outline: 0; background: #fbfaf8; color: #0b0b0a; font-family: inherit; font-size: 14px; }
+    .card input:focus { border-color: #292825; box-shadow: 0 0 0 3px rgba(41, 40, 37, .08); }
+    .card ul.errorlist { margin: 0 0 7px; padding: 0; color: #8b2e25; font-size: 12px; list-style: none; }
+    .card input[type="submit"] { width: 100%; min-height: 42px; margin-top: 7px; border: 0; border-radius: 6px; background: #292825; color: white; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; }
+    .card input[type="submit"]:disabled { opacity: .65; cursor: wait; }
+    .card input[type="submit"]:hover { background: #11110f; }
+    .card h5 { margin: 22px 0 0; color: #4d4b47; font-size: 13px; font-weight: 400; text-align: center; }
+    .card a { color: #0b0b0a; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+    .auth-note { margin-top: 16px; color: #716e68; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .16em; text-align: center; }
 </style>
 
 </head>
 <body>
-    <div class="left-panel">
-        <h1>Let AI Debate Before You Decide</h1>
-        <h4>Explore Different Perspectives. Choose Your Answer!!</h4>
-        <br>
+    <div class="auth-layout">
+        <a class="auth-brand" href="{% url 'landing' %}"><span class="auth-brand-mark"><img src="{% static 'images/logo3.png' %}" alt="BeyondWhole logo"></span><span>BeyondWhole</span></a>
         {% block content %}{% endblock %}
     </div>
-    <div class="right-panel">
-        <img src="{% static 'images/bg.webp' %}" alt="AI debate">
-    </div>
     <script>
+        // Disable the submit control after a valid attempt to prevent duplicate posts.
         document.querySelectorAll(".auth-form").forEach((form) => {
             form.addEventListener("submit", () => {
                 const submitButton = form.querySelector('input[type="submit"]');

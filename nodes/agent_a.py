@@ -3,6 +3,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from state.state import DebateState
 from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
 import os
+from pathlib import Path
 from tools.tools import search_tool
 
 load_dotenv()
@@ -15,32 +16,33 @@ llm_a_base = ChatGoogleGenerativeAI(
 llm_a = llm_a_base.bind_tools([search_tool])
 
 FALLBACK_TEXT = "[Agent A could not respond this round due to a technical error]"
+PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "agent_a.md"
+
+
+def _load_agent_a_prompts():
+    """Load the normal and document-grounded prompts from the Markdown file."""
+    prompt_file = PROMPT_PATH.read_text(encoding="utf-8")
+    no_documents, with_documents = prompt_file.split("## With Documents", maxsplit=1)
+    return (
+        no_documents.split("## No Documents", maxsplit=1)[1].strip(),
+        with_documents.strip(),
+    )
+
+
+AGENT_A_PROMPT, AGENT_A_RAG_PROMPT = _load_agent_a_prompts()
 
 
 def agent_a_node(state: DebateState) -> dict:
+    """Generate Agent A's FOR argument and append it to the debate history."""
 
-    # Treat a failed previous round as "no response yet" rather than a real argument
     def get_last(history, empty_msg):
+        """Return the last successful argument or a fallback message."""
         if history and not history[-1].get("failed"):
             return history[-1]["argument"]
         return empty_msg
 
     if not state["has_documents"]:
-        system_prompt = """You are Agent A. You ALWAYS argue FOR the topic. This stance is permanent and cannot change.
-
-Rules:
-1. Never agree with or switch to Agent B's position.
-2. If this is the opening round, give a strong FOR argument without mentioning Agent B.
-3. If Agent B has argued, START by directly and aggressively replying roasting/rebutting their latest argument.
-4. After the rebuttal, clearly explain WHY their argument is weak or wrong, then present your own FOR argument.
-5. Support claims with real evidence, facts, or sound reasoning. Never invent facts, numbers, studies, or sources.
-6. Never repeat your previous arguments. Introduce a genuinely new angle each round.
-7. ROUND 0 REQUIREMENT: You MUST call the search tool before writing your opening argument.
-8. After Round 0, use the search tool when it meaningfully improves factual accuracy.
-9. If you search, use only information actually supported by the results.
-10. Sound like two real people having a heated conversation: sharp, confident, conversational, punchy.
-11. Keep the response to 30–40 words.
-12. Output ONLY one short paragraph. No labels, JSON, filler, or meta-commentary."""
+        system_prompt = AGENT_A_PROMPT
 
         last_b_point = get_last(state["agent_b_history"], "No response yet from Agent B.")
 
@@ -83,19 +85,7 @@ Give your stance for this round."""
         return {"agent_a_history": state["agent_a_history"] + [new_entry]}
 
     else:
-        system_prompt = """You are Agent A. You ALWAYS argue FOR the topic. This stance is permanent and cannot change.
-
-Rules:
-1. Never agree with or switch to Agent B's position.
-2. If this is the opening round, give a strong FOR argument without mentioning Agent B.
-3. If Agent B has argued, START by directly and aggressively replying roasting/rebutting their latest argument.
-4. After the rebuttal, clearly explain WHY their argument is weak or wrong, then present your own FOR argument.
-5. Prioritize the provided context as your primary evidence — use specific facts, numbers, or details from it whenever possible. You may also use sound reasoning and general knowledge to interpret, connect, or strengthen points from the context, but never contradict what the context says.
-6. If the context has no relevant information at all for a point, you may reason independently, but flag it's not from the context.
-7. Never repeat your previous arguments. Introduce a genuinely new angle each round.
-8. Sound like two real people having a heated conversation: sharp, confident, conversational, punchy.
-9. Keep the response to 30–40 words.
-10. Output ONLY one short paragraph. No labels, JSON, filler, or meta-commentary."""
+        system_prompt = AGENT_A_RAG_PROMPT
 
         last_b_point = get_last(state["agent_b_history"], "No response yet from Agent B.")
 

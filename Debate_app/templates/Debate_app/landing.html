@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeyondWhole | MAD Chatbot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+</head>
+<body>
+    <!-- Primary navigation keeps the product identity and entry points visible. -->
+    <header class="site-header">
+        <a class="brand" href="{% url 'landing' %}" aria-label="BeyondWhole home">
+            <span class="brand-mark"><img src="{% static 'images/logo3.png' %}" alt=""></span>
+            <span>BeyondWhole</span>
+        </a>
+        <nav class="desktop-nav" aria-label="Primary navigation">
+            <a href="#how-it-works">How it works</a>
+        </nav>
+        <div class="header-actions">
+            <a class="button button-light" href="{% url 'login' %}">Log in</a>
+            <a class="button button-dark" href="{% url 'signup_view' %}">Start debating <span aria-hidden="true">→</span></a>
+        </div>
+        <button class="menu-button" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
+    </header>
+    <!-- Mobile navigation exposes the same account actions as the desktop header. -->
+    <nav class="mobile-nav" aria-label="Mobile navigation">
+        <a href="#how-it-works">How it works</a>
+        <a href="{% url 'login' %}">Log in</a>
+        <a class="mobile-nav-primary" href="{% url 'signup_view' %}">Start debating <span aria-hidden="true">→</span></a>
+    </nav>
+
+    <main>
+        <!-- Hero introduces the product promise and gives users a direct next action. -->
+        <section class="hero page-grid">
+            <div class="eyebrow"><span></span> AI DEBATE WORKSPACE</div>
+            <h1>Let AI debate before<br>you decide</h1>
+            <p class="hero-copy">Put any question on trial. Two AI agents argue opposite sides, round after round, and a neutral judge hands down a verdict you can actually reason with.</p>
+            <div class="hero-actions">
+                <a class="button button-dark button-large" href="{% url 'signup_view' %}">Start debating <span aria-hidden="true">→</span></a>
+                <a class="button button-light button-large" href="#how-it-works"><span aria-hidden="true">↓</span> How it works</a>
+            </div>
+            <div class="feature-grid" aria-label="Workspace features">
+                <div class="feature-tile"><span class="feature-icon" aria-hidden="true">♙</span><span>Two agents</span></div>
+                <div class="feature-tile"><span class="feature-icon" aria-hidden="true">↗</span><span>Cited sources</span></div>
+                <div class="feature-tile"><span class="feature-icon" aria-hidden="true">▤</span><span>RAG context</span></div>
+                <div class="feature-tile"><span class="feature-icon" aria-hidden="true">⚖</span><span>Neutral referee</span></div>
+                <div class="feature-tile"><span class="feature-icon" aria-hidden="true">♧</span><span>Judge verdict</span></div>
+                <div class="feature-tile"><span class="feature-icon" aria-hidden="true">↻</span><span>Multi-round</span></div>
+            </div>
+        </section>
+
+        <!-- The process section turns the abstract promise into three concrete steps. -->
+        <section class="process page-grid" id="how-it-works">
+            <div class="section-kicker">HOW IT WORKS</div>
+            <h2>From a raw question to a<br>reasoned answer</h2>
+            <div class="step-grid">
+                <article class="step-card">
+                    <div class="step-top"><span class="step-icon" aria-hidden="true">▱</span><strong>01</strong></div>
+                    <h3>Ask anything</h3>
+                    <p>Type any question or decision you are weighing. No setup required.</p>
+                </article>
+                <article class="step-card">
+                    <div class="step-top"><span class="step-icon" aria-hidden="true">♙</span><strong>02</strong></div>
+                    <h3>Two agents argue</h3>
+                    <p>Agent Tom and Agent Jerry take opposite sides, round after round.</p>
+                </article>
+                <article class="step-card">
+                    <div class="step-top"><span class="step-icon" aria-hidden="true">♧</span><strong>03</strong></div>
+                    <h3>Get the verdict</h3>
+                    <p>A neutral judge picks a winner with clear, reasoned logic.</p>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer closes the landing flow with the same navigation hierarchy. -->
+    <footer class="site-footer">
+        <div class="footer-brand">
+            <a class="brand" href="{% url 'landing' %}"><span class="brand-mark" ><img src="{%static "images/logo3.png" %}" alt=""></span><span>BeyondWhole</span></a>
+            <p>Explore different perspectives before you commit to an answer. Built for thinkers who want both sides, not a single hot take.</p>
+        </div>
+        <div class="footer-links">
+            <div><span class="footer-label">PRODUCT</span><a href="#how-it-works">How it works</a></div>
+            <div><span class="footer-label">WORKSPACE</span><a href="{% url 'home' %}">Open the workspace</a><a href="{% url 'login' %}">Log in</a></div>
+        </div>
+    </footer>
+    <script>
+        // Toggle the mobile account menu and keep its accessible state in sync.
+        const menuButton = document.querySelector('.menu-button');
+        const mobileNav = document.querySelector('.mobile-nav');
+        menuButton.addEventListener('click', () => {
+            const isOpen = mobileNav.classList.toggle('is-open');
+            menuButton.setAttribute('aria-expanded', String(isOpen));
+            menuButton.setAttribute('aria-label', isOpen ? 'Close navigation' : 'Open navigation');
+        });
+    </script>
+</body>
+</html>

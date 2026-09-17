@@ -25,6 +25,7 @@ initial_state: DebateState = {
     "agent_a_history": [],
     "agent_b_history": [],
     "current_round": 0,
+    "rounds": 2,
     "agent_a_summary": "",
     "agent_b_summary": "",
     "judge_final_decision": {},

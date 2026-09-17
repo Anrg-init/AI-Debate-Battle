@@ -1,17 +1,16 @@
 {% extends 'base.html' %}
-{% block title %}Signup - AI Debate Battle{% endblock %}
+{% block title %}Signup{% endblock %}
 {% block content %}
 
-<div>
-    <br>
-</div>
 <div class="card">
-    <h2>Create Account</h2>
+    <h2>Create your account</h2>
+    <p class="auth-subtitle">Start weighing better decisions with both sides.</p>
     <form action="" method="post" class="auth-form">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Sign up" data-loading-text="Creating account...">
     </form>
-    <h5 style="margin-top:12px;">Already have account? <a href="{% url 'login' %}">Login</a></h5>
+    <h5>Already have an account? <a href="{% url 'login' %}">Log in</a></h5>
+    <p class="auth-note">PRIVATE AI DEBATE WORKSPACE</p>
 </div>
 {% endblock %}

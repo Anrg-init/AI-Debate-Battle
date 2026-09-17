@@ -24,6 +24,13 @@ llm = ChatGroq(
 
 
 def clarifier_node(state: DebateState) -> dict:
+    if state["clarifier_attempts"] > 0:
+        return {
+            "input_type": state["input_type"],
+            "is_valid": state["is_valid"],
+            "clarifier_attempts": state["clarifier_attempts"]
+        }
+
     system_prompt = """You are a Clarifier. Given a user's input, decide:
     1. is_valid: true if the input is a meaningful, debatable question or statement. false if it's gibberish, empty, or nonsensical.
     2. input_type: Determine if it's "factual" (has a verifiable true/false answer) or "opinion" (subjective, debatable)."""
@@ -59,19 +66,9 @@ def route_after_clarifier(state: DebateState) -> str:
 
 
 
-# retry node
-# def ask_retry_input_node(state: DebateState) -> dict:
-#     print(f"Your input wasn't valid. Attempt {state['clarifier_attempts']} of 3.")
-#     new_input = input("Please enter a valid question: ")
-
-#     return {
-#         "user_input": new_input
-#     }
-
-
 #loop of agenta and agentb debating 
 def route_of_agentsloops(state: DebateState) -> dict: 
-    if state["current_round"]<2:
+    if state["current_round"] < state["rounds"]:
         return "continue"
     else: 
         print("----- DEBATE ENDS HERE ---------")
