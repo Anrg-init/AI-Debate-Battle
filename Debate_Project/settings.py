@@ -28,7 +28,7 @@ def env_bool(name, default=False):
 
 
 # Development remains convenient, while production must provide its own key.
-DEBUG = env_bool("DJANGO_DEBUG", False)
+DEBUG = env_bool("DJANGO_DEBUG", True)
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-local-development-key")
 if not DEBUG and SECRET_KEY.startswith("django-insecure-"):
     raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG=False")
