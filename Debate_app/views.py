@@ -1,6 +1,7 @@
 import os
 import json
 import uuid
+import logging
 # JsonResponse is used by normal AJAX endpoints; StreamingHttpResponse keeps
 # the debate connection open while LangGraph emits completed node updates.
 from django.http import JsonResponse, StreamingHttpResponse, Http404
@@ -113,6 +114,10 @@ def stream_debate(request):
 
 
 
+
+logger = logging.getLogger(__name__)
+
+
 @login_required
 def upload_document(request):
     """Receive a document, build its vector store, and return upload status.
@@ -142,12 +147,15 @@ def upload_document(request):
         vector_store = build_vector_store(chunks)
         set_vector_store(vector_store)
     except Exception:
+        logger.exception("Document upload failed")
         return JsonResponse({"error": "The document could not be processed."}, status=500)
     finally:
         if os.path.exists(temp_path):
             os.remove(temp_path)
 
     return JsonResponse({"status": "done"})
+
+
 
 
 def signup_view(request):
