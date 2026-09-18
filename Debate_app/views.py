@@ -213,6 +213,8 @@ def history_detail_view(request, thread_id):
 
     config = {"configurable": {"thread_id": thread_id}}
     try:
+        from graph import app as debate_graph
+
         state_snapshot = debate_graph.get_state(config)
     except Exception as exc:
         print(f"[history_detail_view] State lookup failed: {exc}")
