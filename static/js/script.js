@@ -298,7 +298,7 @@ document.querySelector('input[name="document"]').addEventListener("change", asyn
             hasDocuments = true;
             setInputStatus("Document ready for this debate.", "success");
         } else {
-            throw new Error(data.error || "Document processing failed");
+            throw new Error(data.error || "Aree Free Ki API limit over!!, Kl ana,");
         }
     } catch (error) {
         console.error("Upload failed:", error);
