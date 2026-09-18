@@ -14,12 +14,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-password = os.getenv("SUPABASE_DB_PASSWORD", "")
+password = os.getenv("DB_PASSWORD") or os.getenv("SUPABASE_DB_PASSWORD", "")
 encoded_password = quote(password, safe="")
 DB_URI = os.getenv(
     "SUPABASE_DB_URI",
     (
-        f"postgresql://{os.getenv('DB_USER', 'postgres')}:{encoded_password}"
+        f"postgresql://{os.getenv('DB_USER', 'postgres.pwtmxzeanmddfftddzhi')}:{encoded_password}"
         f"@{os.getenv('DB_HOST', 'aws-0-ap-northeast-2.pooler.supabase.com')}"
         f":{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'postgres')}?sslmode=require"
     ),
