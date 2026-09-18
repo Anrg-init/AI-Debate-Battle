@@ -19,8 +19,9 @@ encoded_password = quote(password, safe="")
 DB_URI = os.getenv(
     "SUPABASE_DB_URI",
     (
-        f"postgresql://postgres:{encoded_password}"
-        "@db.pwtmxzeanmddfftddzhi.supabase.co:5432/postgres?sslmode=require"
+        f"postgresql://{os.getenv('DB_USER', 'postgres')}:{encoded_password}"
+        f"@{os.getenv('DB_HOST', 'aws-0-ap-northeast-2.pooler.supabase.com')}"
+        f":{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'postgres')}?sslmode=require"
     ),
 )
 
