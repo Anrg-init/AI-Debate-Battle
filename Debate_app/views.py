@@ -11,9 +11,6 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 
-# This is the compiled LangGraph workflow. The frontend never calls graph.py
-# directly; it reaches this object through the stream_debate view below.
-from graph import app as debate_graph
 from nodes.clar import clarifier_node
 from rag.ingest import load_document, chunk_document, build_vector_store
 from rag.store import set_vector_store, get_vector_store
@@ -41,6 +38,10 @@ def stream_debate(request):
     completed node is yielded to the browser as a `data:` Server-Sent Event.
     This is node-level streaming, not provider token-by-token streaming.
     """
+    # Load the graph only when a debate starts so public pages do not depend on
+    # optional database checkpoint initialization.
+    from graph import app as debate_graph
+
     # Values arrive from the query string assembled in script.js.
     topic = request.GET.get("topic", "")
     has_documents = request.GET.get("has_documents", "false") == "true"
